@@ -1,0 +1,105 @@
+﻿@model Crudapp.Models.Entities.Employees
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<h1>Edit</h1>
+
+<h4>Employee</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form id="editForm" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="Id" id="EmployeeId" />
+            <div class="form-group">
+                <label asp-for="Name" class="control-label"></label>
+                <input asp-for="Name" class="form-control" id="Name" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Email" class="control-label"></label>
+                <input asp-for="Email" class="form-control" id="Email" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Phone" class="control-label"></label>
+                <input asp-for="Phone" class="form-control" id="Phone" />
+                <span asp-validation-for="Phone" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="DepartmentId" class="control-label"></label>
+                <select asp-for="DepartmentId" class="form-control" id="DepartmentId"></select>
+            </div>
+            <div class="form-group">
+                <label asp-for="DesignationId" class="control-label"></label>
+                <select asp-for="DesignationId" class="form-control" id="DesignationId"></select>
+            </div>
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary">Save</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        $(document).ready(function () {
+            var employeeId = '@Model.Id'; // Assuming you have the employee ID in the model
+
+            // Load form data
+            $.ajax({
+                type: "GET",
+                url: '@Url.Action("GetEmployeeDetails", "Employee")',
+                data: { id: employeeId },
+                success: function (data) {
+                    // Populate form fields with the returned data
+                    $('#EmployeeId').val(data.id);
+                    $('#Name').val(data.name);
+                    $('#Email').val(data.email);
+                    $('#Phone').val(data.phone);
+
+                    // Populate Department dropdown
+                    $.each(data.departments, function (index, department) {
+                        $('#DepartmentId').append('<option value="' + department.value + '">' + department.text + '</option>');
+                    });
+                    $('#DepartmentId').val(data.departmentId); // Set selected value
+
+                    // Populate Designation dropdown
+                    $.each(data.designations, function (index, designation) {
+                        $('#DesignationId').append('<option value="' + designation.value + '">' + designation.text + '</option>');
+                    });
+                    $('#DesignationId').val(data.designationId); // Set selected value
+                },
+                error: function (xhr, status, error) {
+                    console.error("Error loading employee data: " + error);
+                }
+            });
+
+            // Handle form submission
+            $('#editForm').submit(function (event) {
+                event.preventDefault(); // Prevent default form submission
+
+                $.ajax({
+                    type: "POST",
+                    url: '@Url.Action("Edit", "Employee")',
+                    data: $(this).serialize(),
+                    success: function (response) {
+                        window.location.href = '@Url.Action("Index")';
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Error submitting form: " + error);
+                    }
+                });
+            });
+        });
+    </script>
+}
